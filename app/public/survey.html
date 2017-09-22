@@ -160,12 +160,32 @@
         </footer>
     
     </div>   
+ <!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+  
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Your new friend is</h4>
+        </div>
+        <div class="modal-body">
+          <h2 id="bestMatchName"></h2>
+          <img id="bestMatchImg" src="http://dreamatico.com/data_images/face/face-6.jpg" alt="" height="200" width="200">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+</div>
 
   <script type="text/javascript">
     
     $("#submit").on("click", function(){
 
-    	// Form validation
+    	// check if the user inoutted all values
     	function validateForm() {
 		  var isValid = true;
 		  $('.form-control').each(function() {
@@ -187,40 +207,83 @@
 	    		name: $("#name").val(),
 	    		photo: $("#photo").val(),
 	    		scores: [$("#q1").val(), $("#q2").val(), $("#q3").val(), $("#q4").val(), $("#q5").val(), $("#q6").val(), $("#q7").val(), $("#q8").val(), $("#q9").val(), $("#q10").val(), ]
-            }
+            };
 
-            //function to show userData
+             // to show userData
+            console.log("Name: " + userData.name);
+            console.log("Scores: " + userData.scores);
+
+            var userName = userData.name;
+            var userScores = userData.scores;
+
+            // to compare the user score with the scores in the list
             var currentURL = window.location.origin;
+
             $.ajax({url: currentURL + "/api/friends", method: "GET"})
             .done(function(friends) {
                 console.log("_______________________________");
-                console.log("URL: " +currentURL + "api/friends");
+                console.log("URL: " + currentURL + "api/friends");
                 console.log("_______________________________");
                 console.log(friends);
                 console.log("_______________________________");
 
-                for (var i = 0; < friends.lengt; i++) {
-                    console.log("_______________________________");
-                    var element = arr];
-                    
-                }
-                
-            })
+                // create a blank object to store the best match
+                var bestMatch = {
+                    name:"",
+                    Photo:"",
+                    bestDif:150  // set to a value higher than the max that is 50
+                };
 
+                
+                var difference = 0;
+                
+                //loop through the friends scores to find the best match
+                for (var i = 0; i < friends.length; i++) {
+                    console.log(friends[i]); 
+                    for (var j = 0; j < friends[i].scores[j]; j++) {
+
+                        var userScoreInt = parseInt(userScores[j]);
+                        var friendscoreInt = parseInt(friends[i].scores[j]);
+                        difference += Math.abs(userScoreInt - friendscoreInt);
+                        console.log("difference: " + difference);
+
+                        if (difference <= bestMatch.bestDif) {
+                            bestMatch.name = friends[i].name;
+                            bestMatch.Photo = friends[i].photo;
+                            bestMatch.bestDif = difference;
+                        } // end if
+
+                    } // end for j
+               
+                } // end for i
+
+                friends.push(userData);
+                console.log("match Name: " + bestMatch.name);
+                console.log("match photo: " + bestMatch.Photo);
+                console.log("match diff: " +  bestMatch.bestDif);
+                $("#bestMatchName").text(bestMatch.name);
+                $("#bestMatchImg").attr("src", bestMatch.Photo)
+
+                $("#myModal").modal("toggle");
+                
+                
+            }); // end .done
+            $.post(currentURL + "api/friends", userData, function(data){
+                console.log("in post");
+                $("#bestMatchName").text(data.name);
+                $("#bestMatchImg").attr("src", data.photo)
+
+                $("#myModal").modal("toggle");
+             
+            });
         }
         else {
 			alert("Please fill out all fields before submitting!");
 		}
     	
-    	return false;
+        return false;
+        
     }); //end submit
-
-
-
-
-
-
-
 
 
 
